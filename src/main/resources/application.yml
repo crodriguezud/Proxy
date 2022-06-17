@@ -1,0 +1,7 @@
+spring:
+  main:
+    allow-circular-references: TRUE
+  data:
+      mongodb:
+        uri: mongodb+srv://admin:123456as@cluster0.sfl39bt.mongodb.net/?retryWrites=true&w=majority
+        database: meli
