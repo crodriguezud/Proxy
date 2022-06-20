@@ -10,4 +10,10 @@ public interface RequestRepository extends MongoRepository<Request, Long> {
 	@Query(value = "{ipOrigin: ?0}", count = true)
 	public Long countIp(String ipOrigin);
 	
+	@Query(value = "{path: ?0}", count = true)
+	public Long countPath(String path);
+	
+	@Query(value = "{method: ?0}", count = true)
+	public Long countMethod(String method);
+	
 }

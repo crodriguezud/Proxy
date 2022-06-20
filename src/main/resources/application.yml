@@ -3,5 +3,11 @@ spring:
     allow-circular-references: TRUE
   data:
       mongodb:
-        uri: mongodb+srv://admin:123456as@cluster0.sfl39bt.mongodb.net/?retryWrites=true&w=majority
+        uri: mongodb+srv://admin:54321@cluster0.sfl39bt.mongodb.net/?retryWrites=true&w=majority
         database: meli
+        
+proxy:
+  max:
+    path: 5
+    method: 3
+    ip: 10

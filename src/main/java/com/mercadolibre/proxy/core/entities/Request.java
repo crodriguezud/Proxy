@@ -4,17 +4,17 @@ import java.io.Serializable;
 //import java.util.Calendar;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.Document;
-
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
 @Document(value="request")
 public class Request implements Serializable {
 
 	
 	private static final long serialVersionUID = -575411066499743649L;
+	
+	@Transient
+    public static final String SEQUENCE_NAME = "request_sequence";
 	
 	@Id
 	private Long id;
