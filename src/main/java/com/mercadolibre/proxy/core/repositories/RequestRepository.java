@@ -3,7 +3,7 @@ package com.mercadolibre.proxy.core.repositories;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 
-import com.mercadolibre.proxy.core.entities.Request;
+import com.mercadolibre.proxy.core.documents.Request;
 
 public interface RequestRepository extends MongoRepository<Request, Long> {
 

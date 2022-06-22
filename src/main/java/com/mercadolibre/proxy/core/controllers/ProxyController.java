@@ -1,33 +1,48 @@
 package com.mercadolibre.proxy.core.controllers;
 
-import javax.servlet.http.HttpServletRequest;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.util.MultiValueMap;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
+import com.mercadolibre.proxy.core.exceptions.InvalidUriException;
+import com.mercadolibre.proxy.core.exceptions.UnlimitedException;
 import com.mercadolibre.proxy.core.services.ProxyService;
 import com.mercadolibre.proxy.utils.WildcardParam;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.bind.annotation.*;
+
+import javax.servlet.http.HttpServletRequest;
 
 @RestController
 public class ProxyController {
 
-	@Autowired
 	private ProxyService proxyService;
-	
-	public ProxyController () {
+
+	@Autowired
+	public ProxyController (ProxyService proxyService) {
+		this.proxyService = proxyService;
 	}
-	
-	
+
+	/**
+	 *
+	 * @param path
+	 * @param reqPara
+	 * @param request
+	 * @return
+	 * @exception
+	 * @author Cristian Rodriguez - 21/06/2022
+	 */
 	@GetMapping("/**")
-	public String query(@WildcardParam String path, @RequestParam MultiValueMap<String, String> reqPara, HttpServletRequest request) {
-		return proxyService.query(path, reqPara, request.getRemoteAddr(), "GET");
-		
+	public ResponseEntity<?> query(@WildcardParam String path, @RequestParam MultiValueMap<String, String> reqPara, HttpServletRequest request) {
+		try {
+			return new ResponseEntity<>(proxyService.query(path, reqPara, request.getRemoteAddr(), "GET"), HttpStatus.OK);
+		}catch(InvalidUriException e) {
+			return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+		}catch(UnlimitedException e) {
+			return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+		}catch(Exception e) {
+			return new ResponseEntity<>(e, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
 	}
 	
 	@PutMapping("/**")
@@ -35,9 +50,9 @@ public class ProxyController {
 		proxyService.update(path, reqPara, request.getRemoteAddr(), "PUT");
 	}
 	
-	@PostMapping("/**")
-	public void create(@WildcardParam String path, @RequestParam MultiValueMap<String, String> reqPara, HttpServletRequest request) {
-		proxyService.create(path, reqPara, request.getRemoteAddr(), "POST");
+	@PostMapping(value="/**",produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<?> create(@WildcardParam String path, @RequestParam MultiValueMap<String, String> reqPara, @RequestBody Object request) {
+		return new ResponseEntity<>(proxyService.create(path, reqPara, request, "POST"),HttpStatus.OK);
 	}
 	
 	@DeleteMapping("/**")

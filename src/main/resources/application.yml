@@ -8,6 +8,10 @@ spring:
         
 proxy:
   max:
-    path: 5
-    method: 3
+    path: 7
+    method: 10
     ip: 10
+  route:
+    meli: https://api.mercadolibre.com/
+    test: http://api.countrylayer.com/
+    test2: https://reqres.in/
