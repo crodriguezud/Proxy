@@ -4,6 +4,7 @@ package com.mercadolibre.proxy.core.services.impl;
 import com.mercadolibre.proxy.core.documents.Request;
 import com.mercadolibre.proxy.core.documents.Sequence;
 import com.mercadolibre.proxy.core.exceptions.InvalidUriException;
+import com.mercadolibre.proxy.core.exceptions.MongoConnectionExpection;
 import com.mercadolibre.proxy.core.exceptions.UnlimitedException;
 import com.mercadolibre.proxy.core.repositories.RequestRepository;
 import com.mercadolibre.proxy.core.repositories.SequenceRepository;
@@ -43,87 +44,119 @@ public class ProxyServiceImpl implements ProxyService {
 		this.req = req;
 		this.seq = seq;
 	}
-	
-	
+
+	/**
+	 * Is a method for petition type POST
+	 * @param path Uri petition
+	 * @param requestParameters Parameters Uri
+	 * @param request get JSon Object of body
+	 * @param method Petition type
+	 * @param ipOrigin Get value of ip origin
+	 * @return
+	 * @author Cristian Rodriguez 22/06/2022
+	 */
 	@Override
-	public String create(String path, MultiValueMap<String, String> reqPara, Object request, String method) {
+	public String create(String path, MultiValueMap<String, String> requestParameters, Object request, String method, String ipOrigin) {
 		
 		String app = path.split("/")[0];
 		String route = env.getProperty("proxy.route."+app);
 		int separator = path.indexOf("/");
 		path = path.substring(separator+1, path.length());
-		if (validate(route+path, "", method)) {
-			
-			UriComponents builder = UriComponentsBuilder.fromHttpUrl(route+path)
-	                .queryParams(reqPara).build();
-			
-			return rest.postForObject(builder.toUriString(), request, String.class);
-			
-		}else {
-			return "";
-		}
+		validate(route+path, ipOrigin, method);
+
+		UriComponents builder = UriComponentsBuilder.fromHttpUrl(route+path)
+				.queryParams(requestParameters).build();
+
+		return rest.postForObject(builder.toUriString(), request, String.class);
 		
 	}
 
+	/**
+	 * Is a method for petition type PUT
+	 * @param path Uri petition
+	 * @param requestParameters Parameters Uri
+	 * @param ipOrigin Get value of ip origin
+	 * @param method Petition type
+	 * @param request get JSon Object of body
+	 * @author Cristian Rodriguez 22/06/2022
+	 */
 	@Override
-	public void update(String path, MultiValueMap<String, String> reqPara, String ipOrigin, String method) {
+	public void update(String path, MultiValueMap<String, String> requestParameters, String ipOrigin, String method, Object request) {
 		
 		String app = path.split("/")[0];
 		String route = env.getProperty("proxy.route."+app);
 		int separator = path.indexOf("/");
 		path = path.substring(separator+1, path.length());
-		if (validate(route+path, ipOrigin, method)) {
+		validate(route+path, ipOrigin, method);
 			
-			UriComponents builder = UriComponentsBuilder.fromHttpUrl(route+path)
-	                .queryParams(reqPara).build();
-			
-			rest.put(builder.toUriString(), String.class);
-			
-		}
+		UriComponents builder = UriComponentsBuilder.fromHttpUrl(route+path)
+				.queryParams(requestParameters).build();
+
+		rest.put(builder.toUriString(), request, String.class);
 		
 	}
 
+	/**
+	 *
+	 * @param path Uri petition
+	 * @param requestParameters Parameters Uri
+	 * @param ipOrigin Get value of ip origin
+	 * @param method Petition type
+	 * @return
+	 * @author Cristian Rodriguez 22/06/2022
+	 */
+
 	@Override
-	public String query(String path, MultiValueMap<String, String> reqPara, String ipOrigin, String method) {
+	public String query(String path, MultiValueMap<String, String> requestParameters, String ipOrigin, String method) {
 
 		if (path.isBlank() || !path.contains("/") ){
-			throw new InvalidUriException("Uri Invalida");
+			throw new InvalidUriException("Uri invalidate");
 		}
 		String app = path.split("/")[0];
 		String route = env.getProperty("proxy.route." + app);
 		int separator = path.indexOf("/");
 		path = path.substring(separator + 1, path.length());
-		if (validate(route + path, ipOrigin, method)) {
+		validate(route + path, ipOrigin, method);
 
-			UriComponents builder = UriComponentsBuilder.fromHttpUrl(route + path)
-					.queryParams(reqPara).build();
+		UriComponents builder = UriComponentsBuilder.fromHttpUrl(route + path)
+				.queryParams(requestParameters).build();
 
-			return rest.getForObject(builder.toUriString(), String.class);
+		return rest.getForObject(builder.toUriString(), String.class);
 
-		} else {
-			return "";
-		}
 	}
 
+	/**
+	 * @param path Uri petition
+	 * @param requestParameters Parameters Uri
+	 * @param ipOrigin Get value of ip origin
+	 * @param method Petition type
+	 * @param request get JSon Object of body
+	 * @author Cristian Rodriguez 22/06/2022
+	 */
 	@Override
-	public void delete(String path, MultiValueMap<String, String> reqPara, String ipOrigin, String method) {
+	public void delete(String path, MultiValueMap<String, String> requestParameters, String ipOrigin, String method, Object request) {
 		
 		String app = path.split("/")[0];
 		String route = env.getProperty("proxy.route."+app);
 		int separator = path.indexOf("/");
 		path = path.substring(separator+1, path.length());
-		if (validate(route+path, ipOrigin, method)) {
+		validate(route+path, ipOrigin, method);
 			
-			UriComponents builder = UriComponentsBuilder.fromHttpUrl(route+path)
-	                .queryParams(reqPara).build();
-			
-			rest.delete(builder.toUriString(), String.class);
-			
-		}
-		
+		UriComponents builder = UriComponentsBuilder.fromHttpUrl(route+path)
+				.queryParams(requestParameters).build();
+
+		rest.delete(builder.toUriString(), String.class);
+
 	}
-	
-	public boolean validate(String route, String ipOrigin, String method) {
+
+	/**
+	 * Method for validate limit of transactions
+	 * @param route Path of petition
+	 * @param ipOrigin Ip origin of petition
+	 * @param method Petition type
+	 * @author Cristian Rodriguez 22/06/2022
+	 */
+	public void validate(String route, String ipOrigin, String method) {
 		try {
 			long countIp = req.countIp(ipOrigin);
 			long countPath = req.countPath(route);
@@ -131,33 +164,29 @@ public class ProxyServiceImpl implements ProxyService {
 
 			if(countIp >= Long.valueOf(env.getProperty("proxy.max.ip")) || countPath >= Long.valueOf(env.getProperty("proxy.max.path")) || countMethod >= Long.valueOf(env.getProperty("proxy.max.method"))){
 				throw new UnlimitedException("Limite de transacciones alcanzado");
-			}
-
-			if (countIp < Long.valueOf(env.getProperty("proxy.max.ip")) && countPath < Long.valueOf(env.getProperty("proxy.max.path")) && countMethod < Long.valueOf(env.getProperty("proxy.max.method"))) {
-
+			}else{
 				Request reqData = new Request();
 				reqData.setId(generateSequence("request_sequence"));
 				reqData.setIpOrigin(ipOrigin);
 				reqData.setPath(route);
 				reqData.setMethod(method);
 				req.insert(reqData);
-
-				return true;
-
-			} else {
-				return false;
 			}
 		} catch (UncategorizedMongoDbException e) {
-			System.out.println("MongoDB Server is Down");
-			return false;
+			throw new MongoConnectionExpection("MongoDB Server is Down");
 		}
 	}
 
-
+	/**
+	 * Method for create sequence at documents
+	 * @param sequenceName Name of sequence create
+	 * @return Id for de document
+	 * @author Cristian Rodriguez 22/06/2022
+	 */
 	@Override
-	public long generateSequence(String seqName) {
+	public long generateSequence(String sequenceName) {
 		
-		Query query = new Query(Criteria.where("id").is(seqName));
+		Query query = new Query(Criteria.where("id").is(sequenceName));
 		Update update = new Update().inc("seq", 1);
 		Sequence counter = mongoOperations.findAndModify(query, update, options().returnNew(true).upsert(true),Sequence.class);
 		return !Objects.isNull(counter)?counter.getSeq():1;

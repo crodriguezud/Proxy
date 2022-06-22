@@ -73,7 +73,7 @@ class ProxyControllerTest {
 
         //When
         String actual = exception.getMessage();
-        String expected = "Uri Invalida";
+        String expected = "Uri invalidate";
 
         //Then
         assertEquals(actual, expected);
