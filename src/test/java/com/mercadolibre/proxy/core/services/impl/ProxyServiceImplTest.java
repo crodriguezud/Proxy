@@ -1,7 +1,7 @@
 package com.mercadolibre.proxy.core.services.impl;
 
+import com.mercadolibre.proxy.core.repositories.ParameterRepository;
 import com.mercadolibre.proxy.core.repositories.RequestRepository;
-import com.mercadolibre.proxy.core.repositories.SequenceRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.client.RestTemplate;
@@ -14,10 +14,10 @@ class ProxyServiceImplTest {
     RequestRepository requestRepository;
 
     @Autowired
-    SequenceRepository sequenceRepository;
+    ParameterRepository parameterRepository;
 
     @Autowired
-    ProxyServiceImpl proxyServiceImpl = new ProxyServiceImpl(restTemplate, requestRepository, sequenceRepository);
+    ProxyServiceImpl proxyServiceImpl = new ProxyServiceImpl(restTemplate, requestRepository, parameterRepository);
 
     @Test
     void query(){

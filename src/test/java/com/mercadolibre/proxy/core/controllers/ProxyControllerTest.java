@@ -10,11 +10,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
-
-import javax.servlet.http.HttpServletRequest;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -28,15 +26,16 @@ class ProxyControllerTest {
     private final static String IP_ORIGIN = "127.0.0.1";
     private final static String METHOD = "GET";
 
-    @Mock
-    private HttpServletRequest request;
+    private ProxyController builder;
+
+
+    private MockHttpServletRequest request;
     @Mock
     private MultiValueMap<String, String> param;
 
     @InjectMocks
     private ProxyController proxyController;
 
-    @Mock
     private ProxyService proxyService;
 
     @InjectMocks
@@ -44,20 +43,29 @@ class ProxyControllerTest {
 
     @BeforeEach
     void setUp() {
-        param.add("access_key","73c2cbbed7274fdc21064749bcefbe41");
+        param = new LinkedMultiValueMap<>();
+        param.add("access_key", "73c2cbbed7274fdc21064749bcefbe41");
+
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setServerName("www.example.com");
+        request.setRemoteAddr("127.0.0.1");
+        request.setRequestURI(URI);
+
     }
 
     @Test
     @DisplayName("Test: ")
     void query_OK(){
         //Given
-        when(proxyService.query(URI, param, IP_ORIGIN, METHOD)).thenReturn(anyString());
+        param = new LinkedMultiValueMap<>();
+        param.add("access_key", "73c2cbbed7274fdc21064749bcefbe41");
+        when(proxyServiceImpl.query(URI, param, IP_ORIGIN, METHOD).getValid()).thenReturn(anyString());
 
         //Then
-        ResponseEntity<?> expected = proxyController.query(URI, param, request);
+        String response = proxyController.query(URI, param, request);
 
         //When
-        assertEquals(HttpStatus.OK, expected.getStatusCode());
+        assertEquals("", response);
     }
 
 

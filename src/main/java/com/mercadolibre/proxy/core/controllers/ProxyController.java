@@ -1,7 +1,5 @@
 package com.mercadolibre.proxy.core.controllers;
 
-import com.mercadolibre.proxy.core.exceptions.InvalidUriException;
-import com.mercadolibre.proxy.core.exceptions.UnlimitedException;
 import com.mercadolibre.proxy.core.services.ProxyService;
 import com.mercadolibre.proxy.utils.WildcardParam;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,16 +31,8 @@ public class ProxyController {
 	 * @author Cristian Rodriguez - 21/06/2022
 	 */
 	@GetMapping("/**")
-	public ResponseEntity<?> query(@WildcardParam String path, @RequestParam MultiValueMap<String, String> requestParameter, HttpServletRequest request) {
-		try {
-			return new ResponseEntity<>(proxyService.query(path, requestParameter, request.getRemoteAddr(), "GET"), HttpStatus.OK);
-		}catch(InvalidUriException e) {
-			return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
-		}catch(UnlimitedException e) {
-			return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-		}catch(Exception e) {
-			return new ResponseEntity<>(e, HttpStatus.INTERNAL_SERVER_ERROR);
-		}
+	public String query(@WildcardParam String path, @RequestParam MultiValueMap<String, String> requestParameter, HttpServletRequest request) {
+		return proxyService.query(path, requestParameter, request.getRemoteAddr(), "GET").getValid();
 	}
 
 	/**
@@ -56,17 +46,8 @@ public class ProxyController {
 	 * @author Cristian Rodriguez - 22/06/2022
 	 */
 	@PutMapping("/**")
-	public ResponseEntity<?> update(@WildcardParam String path, @RequestParam MultiValueMap<String, String> requestParameters, @RequestBody Object request, HttpServletRequest requestIpOrigin) {
-		try {
-			proxyService.update(path, requestParameters, requestIpOrigin.getRemoteAddr(), "PUT", request);
-			return new ResponseEntity<>("Successful", HttpStatus.OK);
-		}catch(InvalidUriException e) {
-			return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
-		}catch(UnlimitedException e) {
-			return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-		}catch(Exception e) {
-			return new ResponseEntity<>(e, HttpStatus.INTERNAL_SERVER_ERROR);
-		}
+	public String update(@WildcardParam String path, @RequestParam MultiValueMap<String, String> requestParameters, @RequestBody Object request, HttpServletRequest requestIpOrigin) {
+			return proxyService.update(path, requestParameters, requestIpOrigin.getRemoteAddr(), "PUT", request);
 	}
 
 	/**
@@ -81,15 +62,7 @@ public class ProxyController {
 	 */
 	@PostMapping(value="/**",produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> create(@WildcardParam String path, @RequestParam MultiValueMap<String, String> requestParameters, @RequestBody Object request,  HttpServletRequest requestIpOrigin) {
-		try {
-			return new ResponseEntity<>(proxyService.create(path, requestParameters, request, "POST", requestIpOrigin.getRemoteAddr()),HttpStatus.OK);
-		}catch(InvalidUriException e) {
-			return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
-		}catch(UnlimitedException e) {
-			return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-		}catch(Exception e) {
-			return new ResponseEntity<>(e, HttpStatus.INTERNAL_SERVER_ERROR);
-		}
+		return new ResponseEntity<>(proxyService.create(path, requestParameters, request, "POST", requestIpOrigin.getRemoteAddr()),HttpStatus.OK);
 	}
 
 	/**
@@ -103,17 +76,8 @@ public class ProxyController {
 	 * @author Cristian Rodriguez - 22/06/2022
 	 */
 	@DeleteMapping("/**")
-	public ResponseEntity<?> delete(@WildcardParam String path, @RequestParam MultiValueMap<String, String> requestParameters, @RequestBody Object request, HttpServletRequest requestIpOrigin) {
-		try {
-			proxyService.delete(path, requestParameters, requestIpOrigin.getRemoteAddr(), "DELETE", request);
-			return new ResponseEntity<>("Successful", HttpStatus.OK);
-		}catch(InvalidUriException e) {
-			return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
-		}catch(UnlimitedException e) {
-			return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-		}catch(Exception e) {
-			return new ResponseEntity<>(e, HttpStatus.INTERNAL_SERVER_ERROR);
-		}
+	public String delete(@WildcardParam String path, @RequestParam MultiValueMap<String, String> requestParameters, @RequestBody Object request, HttpServletRequest requestIpOrigin) {
+		return proxyService.delete(path, requestParameters, requestIpOrigin.getRemoteAddr(), "DELETE", request);
 	}
 	
 }
