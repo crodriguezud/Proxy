@@ -72,11 +72,7 @@ public class ProxyServiceImpl implements ProxyService {
 		path = buildPath(path);
 		validate(path, ipOrigin, method);
 
-		UriComponents builder = UriComponentsBuilder.fromHttpUrl(path)
-				.queryParams(requestParameters).build();
-
-		return restTemplate.postForObject(builder.toUriString(), request, String.class);
-		
+		return (String) sendRequest(method, requestParameters, path, null);
 	}
 
 	/**
@@ -98,13 +94,7 @@ public class ProxyServiceImpl implements ProxyService {
 		path = buildPath(path);
 		validate(path, ipOrigin, method);
 			
-		UriComponents builder = UriComponentsBuilder.fromHttpUrl(path)
-				.queryParams(requestParameters).build();
-
-		HttpEntity<Object> body = new HttpEntity<>(request);
-
-		return restTemplate.exchange(builder.toUriString(), HttpMethod.PUT, body, String.class).getBody();
-		
+		return (String) sendRequest(method, requestParameters, path, request);
 	}
 
 	/**
@@ -118,7 +108,6 @@ public class ProxyServiceImpl implements ProxyService {
 	 */
 
 	@Override
-	@Cacheable(value = "proxy", key = "#path+#method+#requestParameters.toString()")
 	public ResponseGet query(String path, MultiValueMap<String, String> requestParameters, String ipOrigin, String method) {
 
 		if (path.isBlank() || !path.contains("/") ){
@@ -127,12 +116,7 @@ public class ProxyServiceImpl implements ProxyService {
 		path = buildPath(path);
 		validate(path, ipOrigin, method);
 
-		UriComponents builder = UriComponentsBuilder.fromHttpUrl(path)
-				.queryParams(requestParameters).build();
-
-		ResponseGet responseGet= new ResponseGet();
-		responseGet.setValid(restTemplate.getForObject(builder.toUriString(), String.class));
-		return responseGet;
+		return (ResponseGet) sendRequest(method, requestParameters, path, null);
 
 	}
 
@@ -154,12 +138,29 @@ public class ProxyServiceImpl implements ProxyService {
 		path = buildPath(path);
 		validate(path, ipOrigin, method);
 
+		return (String) sendRequest(method, requestParameters, path, request);
+	}
+
+	@Cacheable(value="proxy", key="#method+#requestParameters+#path")
+	public Object sendRequest(String method, MultiValueMap<String, String> requestParameters, String path, Object request){
+
 		UriComponents builder = UriComponentsBuilder.fromHttpUrl(path)
 				.queryParams(requestParameters).build();
-
+		ResponseGet responseGet= new ResponseGet();
 		HttpEntity<Object> body = new HttpEntity<>(request);
-
-		return restTemplate.exchange(builder.toUriString(), HttpMethod.DELETE, body, String.class).getBody();
+		switch (method){
+			case "GET":
+				responseGet.setValid(restTemplate.getForObject(builder.toUriString(), String.class));
+				return responseGet;
+			case "POST":
+				return restTemplate.postForObject(builder.toUriString(), request, String.class);
+			case "DELETE":
+				return restTemplate.exchange(builder.toUriString(), HttpMethod.DELETE, body, String.class).getBody();
+			case "PUT":
+				return restTemplate.exchange(builder.toUriString(), HttpMethod.PUT, body, String.class).getBody();
+			default:
+				return "";
+		}
 
 	}
 

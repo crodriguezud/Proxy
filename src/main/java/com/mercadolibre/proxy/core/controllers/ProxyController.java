@@ -3,6 +3,7 @@ package com.mercadolibre.proxy.core.controllers;
 import com.mercadolibre.proxy.core.services.ProxyService;
 import com.mercadolibre.proxy.utils.WildcardParam;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.client.circuitbreaker.CircuitBreakerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +16,9 @@ import javax.servlet.http.HttpServletRequest;
 public class ProxyController {
 
 	private ProxyService proxyService;
+
+	@Autowired
+	private CircuitBreakerFactory circuitBreaker;
 
 	@Autowired
 	public ProxyController (ProxyService proxyService) {
@@ -32,7 +36,14 @@ public class ProxyController {
 	 */
 	@GetMapping("/**")
 	public String query(@WildcardParam String path, @RequestParam MultiValueMap<String, String> requestParameter, HttpServletRequest request) {
-		return proxyService.query(path, requestParameter, request.getRemoteAddr(), "GET").getValid();
+		return circuitBreaker.create("proxy").run(() ->
+				proxyService.query(path, requestParameter, request.getRemoteAddr(), "GET").getValid(),e -> fallback(path, requestParameter, request, e)
+		);
+	}
+
+
+	public String fallback(@WildcardParam String path, @RequestParam MultiValueMap<String, String> requestParameter, HttpServletRequest request, Throwable e){
+		return "Test fallback";
 	}
 
 	/**

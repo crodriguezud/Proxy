@@ -1,0 +1,10 @@
+FROM openjdk:latest
+
+# cd /usr/local/runme
+WORKDIR /usr/local/runme
+
+# copy Proxy.jar /usr/local/runme/Proxy.jar
+COPY Proxy.jar .
+
+# java -jar /usr/local/runme/app.jar
+ENTRYPOINT ["java","-jar","Proxy.jar"]

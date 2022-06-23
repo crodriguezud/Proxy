@@ -5,12 +5,11 @@ spring:
       mongodb:
         uri: mongodb+srv://admin:54321@cluster0.sfl39bt.mongodb.net/?retryWrites=true&w=majority
         database: meli
-        
 proxy:
   max:
-    path: 7
-    method: 10
-    ip: 10
+    path: 20000
+    method: 20000
+    ip: 50000
   route:
     meli: https://api.mercadolibre.com/
     test: http://api.countrylayer.com/
