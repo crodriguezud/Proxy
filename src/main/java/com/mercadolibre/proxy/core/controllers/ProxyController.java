@@ -21,8 +21,9 @@ public class ProxyController {
 	private CircuitBreakerFactory circuitBreaker;
 
 	@Autowired
-	public ProxyController (ProxyService proxyService) {
+	public ProxyController (ProxyService proxyService, CircuitBreakerFactory circuitBreaker) {
 		this.proxyService = proxyService;
+		this.circuitBreaker = circuitBreaker;
 	}
 
 	/**
@@ -36,9 +37,10 @@ public class ProxyController {
 	 */
 	@GetMapping("/**")
 	public String query(@WildcardParam String path, @RequestParam MultiValueMap<String, String> requestParameter, HttpServletRequest request) {
-		return circuitBreaker.create("proxy").run(() ->
-				proxyService.query(path, requestParameter, request.getRemoteAddr(), "GET").getValid(),e -> fallback(path, requestParameter, request, e)
-		);
+		return
+		//return circuitBreaker.create("proxy").run(() ->
+				proxyService.query(path, requestParameter, request.getRemoteAddr(), "GET").getValid();//,e -> fallback(path, requestParameter, request, e)
+		//);
 	}
 
 

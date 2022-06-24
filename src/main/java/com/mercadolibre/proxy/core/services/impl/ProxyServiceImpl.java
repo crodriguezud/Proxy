@@ -46,10 +46,12 @@ public class ProxyServiceImpl implements ProxyService {
 	@Autowired
 	private Environment env;
 
-	public ProxyServiceImpl(RestTemplate restTemplate, RequestRepository requestRepository, ParameterRepository parameterRepository) {
+	public ProxyServiceImpl(RestTemplate restTemplate, RequestRepository requestRepository, ParameterRepository parameterRepository, Environment env, MongoOperations mongoOperations) {
 		this.restTemplate = restTemplate;
 		this.requestRepository = requestRepository;
 		this.parameterRepository = parameterRepository;
+		this.env = env;
+		this.mongoOperations = mongoOperations;
 	}
 
 	/**
@@ -144,8 +146,13 @@ public class ProxyServiceImpl implements ProxyService {
 	@Cacheable(value="proxy", key="#method+#requestParameters+#path")
 	public Object sendRequest(String method, MultiValueMap<String, String> requestParameters, String path, Object request){
 
-		UriComponents builder = UriComponentsBuilder.fromHttpUrl(path)
-				.queryParams(requestParameters).build();
+		UriComponents builder;
+		if (requestParameters!= null) {
+			builder = UriComponentsBuilder.fromHttpUrl(path)
+					.queryParams(requestParameters).build();
+		}else{
+			builder = UriComponentsBuilder.fromHttpUrl(path).build();
+		}
 		ResponseGet responseGet= new ResponseGet();
 		HttpEntity<Object> body = new HttpEntity<>(request);
 		switch (method){
